@@ -1,0 +1,6 @@
+[package]
+name = "rsevm"
+version = "0.1.0"
+authors = ["Thibault H <Aelto@users.noreply.github.com>"]
+
+[dependencies]
