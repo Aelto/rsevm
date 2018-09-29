@@ -62,6 +62,9 @@ impl Server {
     else {
       println!("incorrect request: {}", full_request);
     }
+  }
 
+  pub fn get(&mut self, route: &str, route_action: EndpointHandler) {
+    self.endpoints.insert(["GET", route].join(" "), route_action);
   }
 }

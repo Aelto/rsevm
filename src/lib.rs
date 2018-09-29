@@ -1,10 +1,9 @@
 mod core;
-mod dom;
+pub mod html;
 
 pub use core::server::{
   Server,
 };
 
-pub use dom::component::{
-  Component,
-};
+pub use core::answers;
+
