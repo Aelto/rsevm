@@ -4,19 +4,21 @@ use std::net::TcpStream;
 use std::collections::HashMap;
 
 use super::response::Response;
+use super::request::Request;
+use super::route::Route;
 
 type EndpointHandler = Box<Fn(&mut Response)>;
 
 pub struct Server {
   pub address: String,
-  pub endpoints: HashMap<String, EndpointHandler>,
+  pub endpoints: Vec<Route>,
 }
 
 impl Server {
   pub fn new() -> Server {
     Server {
       address: "127.0.0.1:3000".to_string(),
-      endpoints: HashMap::new(),
+      endpoints: Vec::new(),
     }
   }
 
@@ -42,8 +44,27 @@ impl Server {
     let end_endpoint_infos = full_request.find(" HTTP/1.1");
 
     if end_endpoint_infos.is_some() {
-      let (endpoint, _more) = full_request.split_at(end_endpoint_infos.unwrap());
+      let (request_route, _more) = full_request.split_at(end_endpoint_infos.unwrap());
 
+      let matching_route = self.endpoints
+        .iter()
+        .find(|&route| route.does_match(request_route));
+
+      if matching_route.is_some() {
+        let endpoint_function = &matching_route.unwrap().action;
+        
+        let mut response = Response::new(&mut stream);
+        endpoint_function(&mut response)
+      }
+
+      else {
+        let response = format!("{}{}", "HTTP/1.1 404 NOT FOUND\r\n\r\n", "404 not found");
+        
+        stream.write(response.as_bytes()).unwrap();
+        stream.flush().unwrap();
+      }
+      
+      /*
       let endpoint_function = self.endpoints.get(endpoint);
 
       if endpoint_function.is_some() {
@@ -57,6 +78,7 @@ impl Server {
         stream.write(response.as_bytes()).unwrap();
         stream.flush().unwrap();
       }
+      */
     }
 
     else {
@@ -65,6 +87,6 @@ impl Server {
   }
 
   pub fn get(&mut self, route: &str, route_action: EndpointHandler) {
-    self.endpoints.insert(["GET", route].join(" "), route_action);
+    self.endpoints.push(Route::new(&["GET", route].join(" "), route_action));
   }
 }
