@@ -51,7 +51,9 @@ impl Server {
         .find(|&route| route.does_match(request_route));
 
       if matching_route.is_some() {
-        let endpoint_function = &matching_route.unwrap().action;
+        let endpoint_route = matching_route.unwrap();
+        let request = Request::new(&endpoint_route.route, &request_route);
+        let endpoint_function = &endpoint_route.action;
         
         let mut response = Response::new(&mut stream);
         endpoint_function(&mut response)

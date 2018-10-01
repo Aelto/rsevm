@@ -2,13 +2,14 @@
 
 pub struct Request<'a> {
   endpoint: &'a str,
-  // request: &'a str,
+  request: &'a str,
 }
 
 impl<'a> Request<'a> {
-    pub fn new(endpoint: &str) -> Request {
+    pub fn new(endpoint: &'a str, request: &'a str) -> Request<'a> {
       Request {
-        endpoint
+        endpoint: &endpoint,
+        request: &request
       }
     }
 
