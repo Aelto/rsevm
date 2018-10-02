@@ -1,13 +1,12 @@
 use std::io::prelude::*;
 use std::net::TcpListener;
 use std::net::TcpStream;
-use std::collections::HashMap;
 
 use super::response::Response;
 use super::request::Request;
 use super::route::Route;
 
-type EndpointHandler = Box<Fn(&mut Response)>;
+type EndpointHandler = Box<Fn(Request, &mut Response)>;
 
 pub struct Server {
   pub address: String,
@@ -56,7 +55,7 @@ impl Server {
         let endpoint_function = &endpoint_route.action;
         
         let mut response = Response::new(&mut stream);
-        endpoint_function(&mut response)
+        endpoint_function(request, &mut response)
       }
 
       else {

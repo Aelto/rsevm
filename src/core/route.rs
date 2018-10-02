@@ -1,7 +1,8 @@
 
 use super::response::Response;
+use super::request::Request;
 
-type EndpointHandler = Box<Fn(&mut Response)>;
+type EndpointHandler = Box<Fn(Request, &mut Response)>;
 
 pub struct Route {
   pub route: String,
@@ -24,7 +25,7 @@ impl Route {
       .all(|s| {
         match request_route_split.next() {
           Some(expr) => s.starts_with(":") || expr == s,
-          None => false,
+          None => s.starts_with(":") || false,
         }
       })
   }
