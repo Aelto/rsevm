@@ -12,7 +12,7 @@ impl<'a> Response<'a> {
     }
   }
 
-  pub fn set_response(&mut self, content: &String) {
+  pub fn set_response(&mut self, content: &str) {
     self.stream.write(content.as_bytes()).unwrap();
     self.stream.flush().unwrap();
   }
