@@ -50,5 +50,12 @@ fn main() {
     answer_text(res, 200, &format!("looking for book named {} in {}", title, language))
   }));
 
+  server.post("/new-user", Box::new(|req, res| {
+    let body = req.get_body();
+
+    println!("{:?}", body);
+    // answer_text(res, 200, body["message"])
+  }));
+
   server.listen();
 }

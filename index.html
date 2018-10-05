@@ -8,9 +8,20 @@
 </head>
 <body>
   
-  <div>
-    Hello world
-  </div>
+  <button id="post">
+  	post request
+  </button>
+
+  <script type="text/javascript">
+  	const $post = document.querySelector("#post")
+
+  	$post.addEventListener("click", e => {
+  		fetch(`${location.origin}/new-user`, {
+  			body: JSON.stringify({ message: "body_message" }),
+  			method: "post"
+  		})
+  	})
+  </script>
 
 </body>
 </html>
