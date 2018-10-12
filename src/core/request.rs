@@ -33,26 +33,31 @@ impl<'a> Request<'a> {
       let mut lines = self.full_request
         .lines();
 
-      println!("{:?}", lines.nth(3));
+      let content_length: usize = match lines.nth(3) {
+        Some(line) => {
+          let number_chars: String = line
+            .chars()
+            .skip_while(|&c| c != ' ')
+            .skip(1)
+            .collect();
 
-      let content_length = match lines.nth(3) {
-        Some(line) => line
-          .chars()
-          .skip_while(|&c| c != ' ')
-          .skip(1)
-          .collect() // convert this in a string to allow ::parse()
-          .parse::<u32>().unwrap(),
+          number_chars.parse::<usize>().unwrap()
+        },
         None => return None,
       };
 
       let body_line = lines
-        .nth(10);
-
-      println!("{:?}", body_line);
+        .skip_while(|&l| l.len() != 0)
+        .nth(1);
 
       match body_line {
         Some(line) => {
-          serde_json::from_str(&String::from(line)).ok()
+          let json: String = line
+            .chars()
+            .take(content_length)
+            .collect();
+
+          serde_json::from_str(&json).ok()
         },
         None => None,
       }

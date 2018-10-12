@@ -42,8 +42,6 @@ impl Server {
     let full_request = String::from_utf8_lossy(&buffer);
     let end_endpoint_infos = full_request.find(" HTTP/1.1");
 
-    println!("{:?}", full_request);
-
     if end_endpoint_infos.is_some() {
       let (request_route, _more) = full_request.split_at(end_endpoint_infos.unwrap());
 

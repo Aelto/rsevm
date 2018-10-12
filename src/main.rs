@@ -51,10 +51,14 @@ fn main() {
   }));
 
   server.post("/new-user", Box::new(|req, res| {
-    let body = req.get_body();
+    let body = match req.get_body() {
+      Some(obj) => obj,
+      None => {
+        return answer_text(res, 400, "no message sent in body")
+      },
+    };
 
-    println!("{:?}", body);
-    // answer_text(res, 200, body["message"])
+    answer_text(res, 200, &body["message"].as_str().unwrap())
   }));
 
   server.listen();
