@@ -1,15 +1,17 @@
-
+extern crate serde_json;
 
 pub struct Request<'a> {
   endpoint: &'a str,
   request: &'a str,
+  full_request: &'a str,
 }
 
 impl<'a> Request<'a> {
-    pub fn new(endpoint: &'a str, request: &'a str) -> Request<'a> {
+    pub fn new(endpoint: &'a str, request: &'a str, full_request: &'a str) -> Request<'a> {
       Request {
         endpoint: &endpoint,
-        request: &request
+        request: &request,
+        full_request: &full_request,
       }
     }
 
@@ -26,4 +28,38 @@ impl<'a> Request<'a> {
          None => None,
        };
     }
+
+    pub fn get_body(&self) -> Option<serde_json::Value> {
+      let mut lines = self.full_request
+        .lines();
+
+      let content_length: usize = match lines.nth(3) {
+        Some(line) => {
+          let number_chars: String = line
+            .chars()
+            .skip_while(|&c| c != ' ')
+            .skip(1)
+            .collect();
+
+          number_chars.parse::<usize>().unwrap()
+        },
+        None => return None,
+      };
+
+      let body_line = lines
+        .skip_while(|&l| l.len() != 0)
+        .nth(1);
+
+      match body_line {
+        Some(line) => {
+          let json: String = line
+            .chars()
+            .take(content_length)
+            .collect();
+
+          serde_json::from_str(&json).ok()
+        },
+        None => None,
+      }
+    }  
 }

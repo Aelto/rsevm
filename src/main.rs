@@ -50,5 +50,16 @@ fn main() {
     answer_text(res, 200, &format!("looking for book named {} in {}", title, language))
   }));
 
+  server.post("/new-user", Box::new(|req, res| {
+    let body = match req.get_body() {
+      Some(obj) => obj,
+      None => {
+        return answer_text(res, 400, "no message sent in body")
+      },
+    };
+
+    answer_text(res, 200, &body["message"].as_str().unwrap())
+  }));
+
   server.listen();
 }

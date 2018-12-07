@@ -8,9 +8,30 @@
 </head>
 <body>
   
-  <div>
-    Hello world
+  <button id="post">
+  	post request
+  </button>
+
+  <div id="responses">
+    
   </div>
+
+  <script type="text/javascript">
+  	const $post = document.querySelector("#post")
+    const $responses = document.querySelector("#responses")
+
+  	$post.addEventListener("click", e => {
+  		fetch(`${location.origin}/new-user`, {
+  			body: JSON.stringify({ message: "body_message" }),
+  			method: "post"
+  		})
+      .then(res => res.text())
+      .then(text => {
+        console.log(text)
+        $responses.innerHTML += `<div> ${text} </div>`
+      })
+  	})
+  </script>
 
 </body>
 </html>

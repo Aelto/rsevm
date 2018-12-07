@@ -51,9 +51,8 @@ impl Server {
 
       if matching_route.is_some() {
         let endpoint_route = matching_route.unwrap();
-        let request = Request::new(&endpoint_route.route, &request_route);
+        let request = Request::new(&endpoint_route.route, &request_route, &full_request);
         let endpoint_function = &endpoint_route.action;
-        
         let mut response = Response::new(&mut stream);
         endpoint_function(request, &mut response)
       }
@@ -64,22 +63,6 @@ impl Server {
         stream.write(response.as_bytes()).unwrap();
         stream.flush().unwrap();
       }
-      
-      /*
-      let endpoint_function = self.endpoints.get(endpoint);
-
-      if endpoint_function.is_some() {
-        let mut response = Response::new(&mut stream);
-        endpoint_function.unwrap()(&mut response)
-      }
-
-      else {
-        let response = format!("{}{}", "HTTP/1.1 404 NOT FOUND\r\n\r\n", "404 not found");
-        
-        stream.write(response.as_bytes()).unwrap();
-        stream.flush().unwrap();
-      }
-      */
     }
 
     else {
@@ -89,5 +72,9 @@ impl Server {
 
   pub fn get(&mut self, route: &str, route_action: EndpointHandler) {
     self.endpoints.push(Route::new(&["GET", route].join(" "), route_action));
+  }
+
+  pub fn post(&mut self, route: &str, route_action: EndpointHandler) {
+    self.endpoints.push(Route::new(&["POST", route].join(" "), route_action));
   }
 }
