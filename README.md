@@ -10,7 +10,7 @@ quick and easy server side rendering in rust
   }))
   ```
 
-- [ ] post requests & body data
+- [x] post requests & body data
   ```rust
   server.post("/new-user", Box::new(|req, res| {
   	let body = req.get_body();
