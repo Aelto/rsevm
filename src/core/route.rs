@@ -1,8 +1,7 @@
 
-use super::response::Response;
 use super::request::Request;
 
-type EndpointHandler = Box<Fn(Request, &mut Response)>;
+type EndpointHandler = Box<Fn(Request) -> Result<String, (u16, String)>>;
 
 pub struct Route {
   pub route: String,

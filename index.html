@@ -8,8 +8,9 @@
 </head>
 <body>
   
+  <input id="new_user_name" placeholder="user name">
   <button id="post">
-  	post request
+  	create user
   </button>
 
   <div id="responses">
@@ -19,17 +20,16 @@
   <script type="text/javascript">
   	const $post = document.querySelector("#post")
     const $responses = document.querySelector("#responses")
+    const $new_user_name = document.querySelector("#new_user_name")
 
   	$post.addEventListener("click", e => {
   		fetch(`${location.origin}/new-user`, {
-  			body: JSON.stringify({ message: "body_message" }),
+  			body: JSON.stringify({ name: $new_user_name.value }),
   			method: "post"
   		})
       .then(res => res.text())
-      .then(text => {
-        console.log(text)
-        $responses.innerHTML += `<div> ${text} </div>`
-      })
+      .then(text => $responses.innerHTML += `<div> ${text} </div>`)
+      .catch(console.log)
   	})
   </script>
 

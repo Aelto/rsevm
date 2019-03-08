@@ -6,7 +6,7 @@ use super::response::Response;
 use super::request::Request;
 use super::route::Route;
 
-type EndpointHandler = Box<Fn(Request, &mut Response)>;
+type EndpointHandler = Box<Fn(Request) -> Result<String, (u16, String)>>;
 
 pub struct Server {
   pub address: String,
@@ -54,7 +54,11 @@ impl Server {
         let request = Request::new(&endpoint_route.route, &request_route, &full_request);
         let endpoint_function = &endpoint_route.action;
         let mut response = Response::new(&mut stream);
-        endpoint_function(request, &mut response)
+        
+        match endpoint_function(request) {
+          Ok(text) => response.set_response(&format!("HTTP/1.1 200 OK\r\n\r\n{}", text)),
+          Err((code, text)) => response.set_response(&format!("HTTP/1.1 {} OK\r\n\r\n{}", code, text))
+        };
       }
 
       else {
