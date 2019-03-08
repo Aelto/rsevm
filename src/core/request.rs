@@ -33,17 +33,17 @@ impl<'a> Request<'a> {
       let mut lines = self.full_request
         .lines();
 
-      let content_length: usize = match lines.nth(3) {
+      let content_length = match lines.find(|line| line.starts_with("Content-Length: ")) {
         Some(line) => {
-          let number_chars: String = line
+          let chars = line
             .chars()
             .skip_while(|&c| c != ' ')
             .skip(1)
-            .collect();
+            .collect::<String>();
 
-          number_chars.parse::<usize>().unwrap()
+          chars.parse::<usize>().unwrap()
         },
-        None => return None,
+        None => return None
       };
 
       let body_line = lines

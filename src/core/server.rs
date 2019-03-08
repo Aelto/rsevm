@@ -35,7 +35,7 @@ impl Server {
   }
 
   fn incoming_handler(&self, mut stream: TcpStream) {
-    let mut buffer = [0; 512];
+    let mut buffer = [0; 1024];
 
     stream.read(&mut buffer).unwrap();
 
