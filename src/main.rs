@@ -61,9 +61,10 @@ fn main() {
     let data: User = serde_json::from_value(body)
       .map_err(|_e| (500, "could not parse json body".to_string()))?;
 
+    let username = data.name.clone();
     users.lock().unwrap().push(data);
 
-    Ok(String::new())
+    Ok(format!("user {} created", username))
   }));
 
   server.listen();
