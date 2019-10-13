@@ -18,3 +18,30 @@ quick and easy server side rendering in rust
   	answer_text(res, 200, body["message"])
   }))
   ```
+## ideas
+
+- state management: instead of having to use `Arc::new(Mutex::new(...));` for global state variables in the routes. Create a `State` class and a `Reducer` function.
+  ```rust
+  struct State {
+    books: vec<Book>
+  }
+  
+  let mut server = rsevm::Server::new::<State>();
+  
+  server.get("/books/:id", Box::new(|req, state| {
+    match req.get_param(":id") {
+      Some(id) => {
+        let id = id.parse::<usize>().unwrap();
+
+        Ok((state.books[id].clone(), state))
+      },
+      None => Err((403, "no id provided".to_string()))
+    }
+  }));
+  
+  server.post("/books/:id", Box::new(|req, state| {
+    state.books.add(Book::new());
+    
+    Ok(("created", state))
+  }));
+  ```
