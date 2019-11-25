@@ -1,11 +1,11 @@
 extern crate rsevm;
 extern crate serde_json;
 extern crate serde;
+extern crate flame;
 
 use rsevm::answers::{answer_file};
 use rsevm::html::{Node};
-
-use std::sync::{Arc, Mutex, MutexGuard};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 macro_rules! attr {
   ( $($key: ident = $value:expr), *) => {
@@ -14,47 +14,64 @@ macro_rules! attr {
   };
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Clone)]
 struct User {
   name: String
 }
 
-fn main() {
-  let user_list = Arc::new(Mutex::new(Vec::new()));
-  let mut server = rsevm::Server::new();
+#[derive(Clone)]
+struct State {
+  users: Vec<User>,
+  counter: u8,
+}
 
-  server.get("/home", Box::new(|_request| {
-    Ok(answer_file("index.html"))
+impl rsevm::ServerState for State {
+  fn new() -> State {
+    State {
+      users: Vec::new(),
+      counter: 0
+    }
+  }
+}
+
+fn main() {
+  let mut server = rsevm::Server::<State>::new();
+
+  server.get("/home", Box::new(|_request, state| {
+    Ok((answer_file("index.html"), state))
   }));
 
-  server.get("/", Box::new(|_request| {
+  server.get("/", Box::new(|_request, state| {
     let r = Node::new("div", "", attr!{ class = "parent" }, vec! {
       Node::new("p", "hello", attr!{}, vec![])
     });
 
-    Ok(r.render())
+    Ok((r.render(), state))
   }));
 
-  let users = user_list.clone();
-  server.get("/users/:id", Box::new(move |req| {
+  server.get("/counter", Box::new(|_request, mut state| {
+    state.counter += 1;
+
+    Ok((format!("counter: {}", state.counter), state))
+  }));
+
+  server.get("/users/:id", Box::new(|req, state| {
     match req.get_param(":id") {
       Some(id) => {
-        let users: MutexGuard<Vec<User>> = users.lock().unwrap();
         let id = id.parse::<usize>().unwrap();
 
-        if id >= users.len() {
+        if id >= state.users.len() {
           Err((404, "no such user".to_string()))
         }
         else {
-          Ok(users[id].name.clone())
+          Ok((state.users[id].name.clone(), state))
         }
       },
       None => Err((403, "no id provided".to_string()))
     }
   }));
 
-  let users = user_list.clone();
-  server.post("/new-user", Box::new(move |req| {
+  server.post("/new-user", Box::new(|req, mut state| {
     let body = req.get_body()
       .ok_or((500, "no body data received".to_string()))?;
 
@@ -62,10 +79,15 @@ fn main() {
       .map_err(|_e| (500, "could not parse json body".to_string()))?;
 
     let username = data.name.clone();
-    users.lock().unwrap().push(data);
+    state.users.push(data);
 
-    Ok(format!("user {} created", username))
+    Ok((format!("user {} created", username), state))
   }));
 
+  use std::fs::File;
+
+  
   server.listen();
+
+  flame::dump_html(&mut File::create("flame-graph.html").unwrap()).unwrap();
 }

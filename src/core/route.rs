@@ -1,15 +1,18 @@
 
 use super::request::Request;
 
-type EndpointHandler = Box<Fn(Request) -> Result<String, (u16, String)>>;
+pub type EndpointHandlerOkResponse<T> = (String, T);
+pub type EndpointHandlerErrResponse = (u16, String);
+pub type EndpointHandlerFn<T> = dyn Fn(Request, T) -> Result<EndpointHandlerOkResponse<T>, EndpointHandlerErrResponse>;
+pub type EndpointHandler<T> = Box<EndpointHandlerFn<T>>;
 
-pub struct Route {
+pub struct Route<T> {
   pub route: String,
-  pub action: EndpointHandler,
+  pub action: EndpointHandler<T>,
 }
 
-impl Route {
-  pub fn new(route: &str, action: EndpointHandler) -> Route {
+impl<T> Route<T> {
+  pub fn new(route: &str, action: EndpointHandler<T>) -> Route<T> {
     Route {
       route: route.to_string(),
       action
